@@ -8,7 +8,7 @@ import com.mommoo.permission.listener.OnPermissionDenied;
 import com.mommoo.permission.listener.OnPermissionGranted;
 import com.mommoo.permission.listener.OnUserDirectPermissionDeny;
 import com.mommoo.permission.listener.OnUserDirectPermissionGrant;
-import com.mommoo.permission.utils.observer.PermissionEventChecker;
+import com.mommoo.permission.repository.ProxyData;
 import com.mommoo.permission.utils.observer.PermissionEventCode;
 import com.mommoo.permission.utils.observer.PermissionEventProvider;
 import com.mommoo.permission.utils.observer.PermissionSubscriber;
@@ -17,9 +17,33 @@ import java.util.Collection;
 
 import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static com.mommoo.permission.AutoPermissionExtraKey.OFFER_GRANT_PERMISSION_MESSAGE_EXTRA_KEY;
+import static com.mommoo.permission.AutoPermissionExtraKey.OFFER_GRANT_PERMISSION_TITLE_EXTRA_KEY;
+import static com.mommoo.permission.AutoPermissionExtraKey.PERMISSION_ARRAY_EXTRA_KEY;
+import static com.mommoo.permission.AutoPermissionExtraKey.POST_NOTICE_MESSAGE_EXTRA_KEY;
+import static com.mommoo.permission.AutoPermissionExtraKey.POST_NOTICE_TITLE_EXTRA_KEY;
+import static com.mommoo.permission.AutoPermissionExtraKey.PRE_NOTICE_MESSAGE_EXTRA_KEY;
+import static com.mommoo.permission.AutoPermissionExtraKey.PRE_NOTICE_TITLE_EXTRA_KEY;
+import static com.mommoo.permission.AutoPermissionExtraKey.TARGET_APPLICATION_PACKAGE_NAME_EXTRA_KEY;
 
 /**
- * Created by mommoo on 2017-05-31.
+ * Copyright 2017 Mommoo
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author mommoo
+ * @since 2017-05-31
+ *
  */
 
 public class MommooPermission {
@@ -32,6 +56,10 @@ public class MommooPermission {
                 .getEventProvider()
                 .registerSubscriber(createSelfCheckSubscriber())
                 .registerSubscriber(createUserResponseSubscriber());
+    }
+
+    private boolean isAppRestatedAndNeedToCheckUserResponse(){
+        return PermissionEventProvider.getEventProvider().isExistProxy();
     }
 
     private PermissionSubscriber createSelfCheckSubscriber(){
@@ -61,15 +89,30 @@ public class MommooPermission {
     }
 
     public void checkPermissions(){
+         /* If user activity was destroyed abnormally, user activity re-invoke checkPermissions method
+          * So, we have to prevent to re invoked permission check activity
+          * And, we have to rollback user response data of permission check
+          * */
+        if (isAppRestatedAndNeedToCheckUserResponse()){
+            PermissionEventProvider eventProvider = PermissionEventProvider.getEventProvider();
+
+            ProxyData proxyData = eventProvider.getProxyData();
+
+            eventProvider.notifyToSubscriber(proxyData.getEventCode(),proxyData.getGrantedPermissionList(),proxyData.getDeniedPermissionList());
+            eventProvider.unRegisterAllSubscribers();
+            eventProvider.removeProxyData();
+            return;
+        }
+
         Intent intent = new Intent(this.builder.context,AutoPermissionActivity.class);
-        intent.putExtra(AutoPermissionActivity.PERMISSION_ARRAY_EXTRA_KEY, this.builder.permissions);
-        intent.putExtra(AutoPermissionActivity.PRE_NOTICE_TITLE_EXTRA_KEY, this.builder.preNoticeTitle);
-        intent.putExtra(AutoPermissionActivity.PRE_NOTICE_MESSAGE_EXTRA_KEY, this.builder.preNoticeMessage);
-        intent.putExtra(AutoPermissionActivity.POST_NOTICE_TITLE_EXTRA_KEY, this.builder.postNoticeTitle);
-        intent.putExtra(AutoPermissionActivity.POST_NOTICE_MESSAGE_EXTRA_KEY, this.builder.postNoticeMessage);
-        intent.putExtra(AutoPermissionActivity.OFFER_GRANT_PERMISSION_TITLE_EXTRA_KEY, this.builder.offerGrantPermissionTitle);
-        intent.putExtra(AutoPermissionActivity.OFFER_GRANT_PERMISSION_MESSAGE_EXTRA_KEY, this.builder.offerGrantPermissionMessage);
-        intent.putExtra(AutoPermissionActivity.TARGET_APPLICATION_PACKAGE_NAME_EXTRA_KEY, this.builder.context.getPackageName());
+        intent.putExtra(PERMISSION_ARRAY_EXTRA_KEY, this.builder.permissions);
+        intent.putExtra(PRE_NOTICE_TITLE_EXTRA_KEY, this.builder.preNoticeTitle);
+        intent.putExtra(PRE_NOTICE_MESSAGE_EXTRA_KEY, this.builder.preNoticeMessage);
+        intent.putExtra(POST_NOTICE_TITLE_EXTRA_KEY, this.builder.postNoticeTitle);
+        intent.putExtra(POST_NOTICE_MESSAGE_EXTRA_KEY, this.builder.postNoticeMessage);
+        intent.putExtra(OFFER_GRANT_PERMISSION_TITLE_EXTRA_KEY, this.builder.offerGrantPermissionTitle);
+        intent.putExtra(OFFER_GRANT_PERMISSION_MESSAGE_EXTRA_KEY, this.builder.offerGrantPermissionMessage);
+        intent.putExtra(TARGET_APPLICATION_PACKAGE_NAME_EXTRA_KEY, this.builder.context.getPackageName());
 
         intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);

@@ -1,8 +1,4 @@
-package com.mommoo.permission.utils.observer;
-
-import com.mommoo.permission.repository.DenyInfo;
-
-import java.util.List;
+package com.mommoo.permission.repository;
 
 /**
  * Copyright 2017 Mommoo
@@ -20,10 +16,24 @@ import java.util.List;
  * limitations under the License.
  *
  * @author mommoo
- * @since 2017-06-01
+ * @since 2017-06-07
  *
  */
 
-public interface PermissionSubscriber{
-    void update(PermissionEventCode permissionEventCode, List<String> grantedPermissionList, List<DenyInfo> deniedPermissionList);
+public class DenyInfo {
+    private final String PERMISSION;
+    private final boolean IS_USER_NEVER_ASK_AGAIN_CHECKED;
+
+    public DenyInfo(String permission, boolean isUserNeverAskAgainChecked){
+        this.PERMISSION = permission;
+        this.IS_USER_NEVER_ASK_AGAIN_CHECKED = isUserNeverAskAgainChecked;
+    }
+
+    public String getPermission(){
+        return this.PERMISSION;
+    }
+
+    public boolean isUserNeverAskAgainChecked(){
+        return IS_USER_NEVER_ASK_AGAIN_CHECKED;
+    }
 }

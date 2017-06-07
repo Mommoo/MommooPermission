@@ -1,17 +1,14 @@
 package com.mommoo.permission;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
-import com.mommoo.permission.utils.PermissionDivideHandler;
+import com.mommoo.permission.repository.DenyInfo;
 import com.mommoo.permission.utils.dialog.PromiseDialog;
 import com.mommoo.permission.utils.dialog.PromiseDialogFactory;
 import com.mommoo.permission.utils.dialog.SequenceDialogHandler;
@@ -21,43 +18,53 @@ import com.mommoo.permission.utils.observer.PermissionEventProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+
+import static com.mommoo.permission.AutoPermissionExtraKey.*;
 
 /**
- * Created by mommoo on 2017-05-31.
+ * Copyright 2017 Mommoo
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author mommoo
+ * @since 2017-05-31
+ *
  */
 
-public class AutoPermissionActivity extends AppCompatActivity{
+class AutoPermissionActivity extends AppCompatActivity{
     private static final int MARSHMALLOW_SDK_VERSION_INT = 23;
     private static final int PERMISSION_REQUEST_CODE = 0;
 
-    public static final int USER_PERMISSION_ACTION_RESULT_CODE = 0;
-
-    public static final String PERMISSION_ARRAY_EXTRA_KEY = "Permissions";
-    public static final String PRE_NOTICE_TITLE_EXTRA_KEY = "preNoticeTitle";
-    public static final String PRE_NOTICE_MESSAGE_EXTRA_KEY = "preNoticeMessage";
-    public static final String POST_NOTICE_TITLE_EXTRA_KEY = "postNoticeTitle";
-    public static final String POST_NOTICE_MESSAGE_EXTRA_KEY = "postNoticeMessage";
-    public static final String OFFER_GRANT_PERMISSION_TITLE_EXTRA_KEY = "offerGrantPermissionTitle";
-    public static final String OFFER_GRANT_PERMISSION_MESSAGE_EXTRA_KEY = "offerGrantPermissionMessage";
-    public static final String TARGET_APPLICATION_PACKAGE_NAME_EXTRA_KEY = "targetApplicationPackageName";
-
-    private PermissionDivideHandler permissionDivideHandler;
+    private PermissionClassifier permissionClassifier;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         overridePendingTransition(0,0);
 
-        if (Build.VERSION.SDK_INT < MARSHMALLOW_SDK_VERSION_INT) {
+        permissionClassifier = new PermissionClassifier(this, savedInstanceState);
+
+        if (Build.VERSION.SDK_INT < MARSHMALLOW_SDK_VERSION_INT || permissionClassifier.getNeedToCheckPermissions().length == 0){
             grantAllPermissions();
+            permissionEventDone();
             return;
         }
 
-        permissionDivideHandler = new PermissionDivideHandler(this, savedInstanceState);
-
+        /* This activity can be destroyed abnormally by user deny directly at app setting permission screen
+         * If this activity was destroyed then, user activity is destroyed too.
+         * So, we have to handle that sending callback-event to programmer who using this library
+         */
         if (isNeedToHandleUserResponse()){
             handleUserResponse();
             return;
@@ -65,15 +72,15 @@ public class AutoPermissionActivity extends AppCompatActivity{
 
         PermissionEventChecker.getChecker(this).start();
 
-        new SequenceDialogHandler()
+        SequenceDialogHandler
                 .showDialog(createPreNoticeDialog())
-                .then(isDialogShown -> ActivityCompat.requestPermissions(AutoPermissionActivity.this, permissionDivideHandler.getNeedToCheckPermissions() , PERMISSION_REQUEST_CODE));
+                .then(isDialogShown -> ActivityCompat.requestPermissions(AutoPermissionActivity.this, permissionClassifier.getNeedToCheckPermissions() , PERMISSION_REQUEST_CODE));
     }
 
     private boolean isNeedToHandleUserResponse(){
         return !PermissionEventChecker.getChecker(this).isCompleteEvent();
     }
-    /* 다이얼로그 팩토리 만들기...! */
+
     private PromiseDialog createPreNoticeDialog(){
         String preNoticeTitle = getIntent().getStringExtra(PRE_NOTICE_TITLE_EXTRA_KEY);
         String preNoticeMessage = getIntent().getStringExtra(PRE_NOTICE_MESSAGE_EXTRA_KEY);
@@ -97,13 +104,13 @@ public class AutoPermissionActivity extends AppCompatActivity{
     }
 
     private boolean isShouldShowOfferGrantDialog(){
-        boolean isExistDeniedPermission = permissionDivideHandler.getDeniedPermissionList().size() > 0;
+        boolean isExistDeniedPermission = permissionClassifier.getDeniedPermissionList().size() > 0;
         boolean isExistDeniedMessage = getIntent().getStringExtra(OFFER_GRANT_PERMISSION_MESSAGE_EXTRA_KEY) != null;
         return isExistDeniedPermission && isExistDeniedMessage;
     }
 
     private void grantAllPermissions(){
-        notifySelfCheckDone(Arrays.asList(permissionDivideHandler.getPermissions()), new ArrayList<>());
+        notifySelfCheckDone(Arrays.asList(permissionClassifier.getPermissions()), new ArrayList<>());
     }
 
     private void notifySelfCheckDone(List<String> grantedPermissionList, List<DenyInfo> deniedPermissionList){
@@ -119,7 +126,9 @@ public class AutoPermissionActivity extends AppCompatActivity{
     }
 
     private void handleUserResponse(){
-        notifyUserResponseDone(permissionDivideHandler.getGrantedPermissionList(), permissionDivideHandler.getDeniedPermissionList());
+        PermissionEventProvider
+                .getEventProvider()
+                .setProxyDataSet(PermissionEventCode.USER_RESPONSE, permissionClassifier.getGrantedPermissionList(), permissionClassifier.getDeniedPermissionList());
         permissionEventDone();
     }
 
@@ -135,18 +144,15 @@ public class AutoPermissionActivity extends AppCompatActivity{
 
         if(requestCode != PERMISSION_REQUEST_CODE) return;
 
-        new SequenceDialogHandler()
+        SequenceDialogHandler
                 .showDialog(createPostNoticeDialog())
-                .then(isDialogShown -> notifySelfCheckDone(permissionDivideHandler.getGrantedPermissionList(),permissionDivideHandler.getDeniedPermissionList()))
+                .then(isDialogShown -> notifySelfCheckDone(permissionClassifier.getGrantedPermissionList(), permissionClassifier.getDeniedPermissionList()))
                 .showDialog(createOfferGrantNotice())
-                .then(isDialogShown -> {
-                    if(!isDialogShown) permissionEventDone();
-                });
+                .then(isDialogShown -> {if(!isDialogShown) permissionEventDone();});
     }
 
     public void permissionEventDone(){
-        PermissionEventChecker
-                .getChecker(this)
+        PermissionEventChecker.getChecker(this)
                 .complete(()-> {
                     PermissionEventProvider.getEventProvider().unRegisterAllSubscribers();
                     finish();
@@ -156,9 +162,11 @@ public class AutoPermissionActivity extends AppCompatActivity{
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == USER_PERMISSION_ACTION_RESULT_CODE){
-            handleUserResponse();
-        }
+
+        if (requestCode != USER_PERMISSION_ACTION_RESULT_CODE) return;
+
+        notifyUserResponseDone(permissionClassifier.getGrantedPermissionList(), permissionClassifier.getDeniedPermissionList());
+        permissionEventDone();
     }
     
 }

@@ -8,12 +8,28 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 
 import com.mommoo.library.widget.alert.AlertDialog;
-import com.mommoo.library.widget.alert.OnPositiveListener;
 import com.mommoo.library.widget.alert.Theme;
-import com.mommoo.permission.AutoPermissionActivity;
+
+import static com.mommoo.permission.AutoPermissionExtraKey.USER_PERMISSION_ACTION_RESULT_CODE;
 
 /**
- * Created by mommoo on 2017-06-05.
+ * Copyright 2017 Mommoo
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author mommoo
+ * @since 2017-06-05
+ *
  */
 
 public class PromiseDialogFactory {
@@ -90,7 +106,7 @@ public class PromiseDialogFactory {
                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     intent.addCategory(Intent.CATEGORY_DEFAULT);
                     intent.setData(Uri.parse("package:"+packageName));
-                    context.startActivityForResult(intent, AutoPermissionActivity.USER_PERMISSION_ACTION_RESULT_CODE);
+                    context.startActivityForResult(intent, USER_PERMISSION_ACTION_RESULT_CODE);
                 })
                 .build();
 
