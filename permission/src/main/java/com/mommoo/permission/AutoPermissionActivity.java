@@ -168,5 +168,4 @@ class AutoPermissionActivity extends AppCompatActivity{
         notifyUserResponseDone(permissionClassifier.getGrantedPermissionList(), permissionClassifier.getDeniedPermissionList());
         permissionEventDone();
     }
-    
 }

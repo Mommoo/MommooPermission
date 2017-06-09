@@ -1,5 +1,7 @@
 package com.mommoo.permission.listener;
 
+import com.mommoo.permission.repository.DenyInfo;
+
 import java.util.List;
 
 /**

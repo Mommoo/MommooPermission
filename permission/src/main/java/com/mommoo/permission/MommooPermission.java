@@ -8,6 +8,7 @@ import com.mommoo.permission.listener.OnPermissionDenied;
 import com.mommoo.permission.listener.OnPermissionGranted;
 import com.mommoo.permission.listener.OnUserDirectPermissionDeny;
 import com.mommoo.permission.listener.OnUserDirectPermissionGrant;
+import com.mommoo.permission.listener.PermissionEmptyListener;
 import com.mommoo.permission.repository.ProxyData;
 import com.mommoo.permission.utils.observer.PermissionEventCode;
 import com.mommoo.permission.utils.observer.PermissionEventProvider;
@@ -63,29 +64,13 @@ public class MommooPermission {
     }
 
     private PermissionSubscriber createSelfCheckSubscriber(){
-        return (eventCode, grantedPermissionList, deniedPermissionList) -> {
-            if (eventCode == PermissionEventCode.SELF_CHECK){
-                if (isValidCondition(grantedPermissionList, builder.onPermissionGranted))
-                    builder.onPermissionGranted.onGranted(grantedPermissionList);
-                if (isValidCondition(deniedPermissionList, builder.onPermissionDenied))
-                    builder.onPermissionDenied.onDenied(deniedPermissionList);
-            }
-        };
+        return PermissionSubscriberFactory
+                .createSelfCheckSubscriber(builder.onPermissionGranted::onGranted,builder.onPermissionDenied::onDenied);
     }
 
     private PermissionSubscriber createUserResponseSubscriber(){
-        return (eventCode, grantedPermissionList, deniedPermissionList) -> {
-            if (eventCode == PermissionEventCode.USER_RESPONSE){
-                if (isValidCondition(grantedPermissionList, builder.onUserDirectPermissionGrant))
-                    builder.onUserDirectPermissionGrant.onUserDirectGrant(grantedPermissionList);
-                if (isValidCondition(deniedPermissionList, builder.onUserDirectPermissionDeny))
-                    builder.onUserDirectPermissionDeny.onUserDirectDeny(deniedPermissionList);
-            }
-        };
-    }
-
-    private boolean isValidCondition(Collection<?> collection, Object object){
-        return collection.size() > 0 && object != null;
+        return PermissionSubscriberFactory
+                .createUserResponseSubscriber(builder.onUserDirectPermissionGrant::onUserDirectGrant,builder.onUserDirectPermissionDeny::onUserDirectDeny);
     }
 
     public void checkPermissions(){
@@ -126,10 +111,10 @@ public class MommooPermission {
         private String preNoticeTitle, preNoticeMessage;
         private String postNoticeTitle, postNoticeMessage;
         private String offerGrantPermissionTitle, offerGrantPermissionMessage;
-        private OnPermissionGranted onPermissionGranted;
-        private OnPermissionDenied onPermissionDenied;
-        private OnUserDirectPermissionGrant onUserDirectPermissionGrant;
-        private OnUserDirectPermissionDeny onUserDirectPermissionDeny;
+        private OnPermissionGranted onPermissionGranted = PermissionEmptyListener.createPermissionGranted();
+        private OnPermissionDenied onPermissionDenied = PermissionEmptyListener.createOnPermissionDenied();
+        private OnUserDirectPermissionGrant onUserDirectPermissionGrant = PermissionEmptyListener.createUserPermissionGrant();
+        private OnUserDirectPermissionDeny onUserDirectPermissionDeny = PermissionEmptyListener.createUserPermissionDeny();
 
         public Builder(Context context){
             this.context = context;

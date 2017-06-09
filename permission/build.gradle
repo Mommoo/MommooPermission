@@ -5,7 +5,7 @@ publish {
     userOrg = 'mommoo'
     groupId = 'com.mommoo.android'
     artifactId = 'mommoo-permission'
-    publishVersion = '0.1.1'
+    publishVersion = '0.1.2'
     desc = 'Android Permission Library - it is easy to use from the android marshmallow version'
     website = 'https://github.com/Mommoo/MommooPermission'
     issueTracker = "${website}/issues"
@@ -51,6 +51,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.mommoo.android:library:0.3.4'
+    compile 'com.mommoo.android:library:0.3.5'
     testCompile 'junit:junit:4.12'
 }

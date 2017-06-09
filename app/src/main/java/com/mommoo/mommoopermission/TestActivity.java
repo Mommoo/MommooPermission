@@ -50,9 +50,11 @@ public class TestActivity extends AppCompatActivity {
                         for (String permission : permissionList) System.out.println("granted " + permission);
                     }
                 })
-                .setPreNoticeDialogData("dh","제발 수락해주세요.")
-                //.setPostNoticeDialogData("ㅇㅇ","마지막!!")
-                .setOfferGrantPermissionData("df","야 여기가서해")
+                .setPreNoticeDialogData("Pre Notice","Please accept all permission to using this app")
+                .setPostNoticeDialogData("Post Notice","If you don't accept permission\nyou have to grant permission directly")
+                .setOfferGrantPermissionData("Move To App Setup","1. Touch the 'SETUP'\n" +
+                        "2. Touch the 'Permission' tab\n"+
+                        "3. Grant all permissions by dragging toggle button")
                 .build()
                 .checkPermissions();
     }
