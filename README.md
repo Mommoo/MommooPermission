@@ -52,9 +52,9 @@ new MommooPermission.Builder(this)
 ### API for cusmizing
 1. Show Dialog
  * ```setPreNoticeDialogData(String preNoticeTitle, String preNoticeMessage)```
-  * If use this, app will show pre notice dialog before permission dialog is shown
+   * If use this, app will show pre notice dialog before permission dialog is shown
  * ```setPostNoticeDialogData(String postNoticeTitle, String postNoticeMessage)```
-  * If use this, app will show post notice dialog after permission dialog is closed
+   * If use this, app will show post notice dialog after permission dialog is closed
  * ```setOfferGrantPermissionData(String offerGrantPermissionTitle, String offerGrantPermissionDialog)```
-  * If use this, app will show guide dialog that help user to grant permission direclty at setup screen
+   * If use this, app will show guide dialog that help user to grant permission direclty at setup screen
  
