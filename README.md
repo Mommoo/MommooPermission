@@ -56,28 +56,31 @@ new MommooPermission.Builder(this)
  setPreNoticeDialogData(String preNoticeTitle, String preNoticeMessage)
  ```
    * If use this, app will show pre notice dialog before permission dialog is shown
+   
+   
  ```
  setPostNoticeDialogData(String postNoticeTitle, String postNoticeMessage)
  ```
    * If use this, app will show post notice dialog after permission dialog is closed
+   
+   
  ```
  setOfferGrantPermissionData(String offerGrantPermissionTitle, String offerGrantPermissionDialog)
  ```
    * If use this, app will show guide dialog that help user to grant permission direclty at setup screen
 
+
 2. Listener
  ```
  setOnPermissionGranted(OnPermissionGranted onPermissionGranted)
- ```
- ```
  setOnPermissionDenied(OnPermissionDenied onPermissionDenied)
  ```
   * If user grant or deny permission at permission dialog, OnPermissionXXXX listener would be invoked
-  
+
+
+
  ```
  setOnUserDirectPermissionGrant(OnUserDirectPermissionGrant onUserDirectPermissionGrant)
- ```
- ```
  setOnUserDirectPermissionDeny(OnUserDirectPermissionDeny onUserDirectPermissionDeny)
  ```
   * After permission dialog closed, if user grant or deny permission at app setup screen, OnUserDirectPermissionXXX listener would be invoked
