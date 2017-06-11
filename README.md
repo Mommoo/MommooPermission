@@ -50,7 +50,7 @@ new MommooPermission.Builder(this)
 ```
 
 ### API for cusmizing
-#### Show Dialog
+#### Show Dialog API
 
  ```java
  setPreNoticeDialogData(String preNoticeTitle, String preNoticeMessage)
@@ -69,7 +69,7 @@ new MommooPermission.Builder(this)
  ```
 
 
-#### Listener
+#### Callback Listener API
  ```java
  setOnPermissionGranted(OnPermissionGranted onPermissionGranted)
  setOnPermissionDenied(OnPermissionDenied onPermissionDenied)
@@ -80,5 +80,23 @@ new MommooPermission.Builder(this)
  setOnUserDirectPermissionGrant(OnUserDirectPermissionGrant onUserDirectPermissionGrant)
  setOnUserDirectPermissionDeny(OnUserDirectPermissionDeny onUserDirectPermissionDeny)
  
- "After permission dialog closed, if user grant or deny permission at app setup screen, OnUserDirectPermissionXXX listener would be invoked"
+ "After permission dialog closed, 
+ if user grant or deny permission at app setup screen, OnUserDirectPermissionXXX listener would be invoked"
+ ```
+ 
+ ### License
+ ```
+ Copyright 2017 Mommoo
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+ http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
  ```
