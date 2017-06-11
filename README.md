@@ -1,5 +1,8 @@
 # MommooPermission
 
+Android Permission Library - it is easy to check permissions
+
+# Introduction
 After the version of the Android marshmallow, 
 
 We have to declare permission in Manifest.xml file as well as **check permission at runtime**
@@ -84,7 +87,7 @@ new MommooPermission.Builder(this)
  if user grant or deny permission at app setup screen, OnUserDirectPermissionXXX listener would be invoked"
  ```
  
- ### License
+ # License
  ```
  Copyright 2017 Mommoo
  
