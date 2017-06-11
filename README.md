@@ -50,7 +50,7 @@ new MommooPermission.Builder(this)
 ```
 
 ### API for cusmizing
-1. Show Dialog
+#### Show Dialog
 
  ```java
  setPreNoticeDialogData(String preNoticeTitle, String preNoticeMessage)
@@ -69,7 +69,7 @@ new MommooPermission.Builder(this)
  ```
 
 
-2. Listener
+#### Listener
  ```java
  setOnPermissionGranted(OnPermissionGranted onPermissionGranted)
  setOnPermissionDenied(OnPermissionDenied onPermissionDenied)
