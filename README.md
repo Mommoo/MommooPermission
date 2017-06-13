@@ -23,7 +23,7 @@ For that, this "MommooPermisson Libaray" can help easy to check permissions
 ### Gradle
 ```java
 dependencies {
-    compile 'com.mommoo.android:mommoo-permission:0.1.3'
+    compile 'com.mommoo.android:mommoo-permission:0.1.4'
 }
 ```
 
