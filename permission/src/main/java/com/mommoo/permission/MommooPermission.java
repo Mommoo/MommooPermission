@@ -8,13 +8,13 @@ import com.mommoo.permission.listener.OnPermissionDenied;
 import com.mommoo.permission.listener.OnPermissionGranted;
 import com.mommoo.permission.listener.OnUserDirectPermissionDeny;
 import com.mommoo.permission.listener.OnUserDirectPermissionGrant;
-import com.mommoo.permission.listener.PermissionEmptyListener;
+import com.mommoo.permission.listener.PermissionEmptyListenerFactory;
+import com.mommoo.permission.repository.DenyInfo;
 import com.mommoo.permission.repository.ProxyData;
-import com.mommoo.permission.utils.observer.PermissionEventCode;
 import com.mommoo.permission.utils.observer.PermissionEventProvider;
 import com.mommoo.permission.utils.observer.PermissionSubscriber;
 
-import java.util.Collection;
+import java.util.List;
 
 import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
@@ -65,12 +65,22 @@ public class MommooPermission {
 
     private PermissionSubscriber createSelfCheckSubscriber(){
         return PermissionSubscriberFactory
-                .createSelfCheckSubscriber(builder.onPermissionGranted::onGranted,builder.onPermissionDenied::onDenied);
+                .createSelfCheckSubscriber(builder.onPermissionGranted,builder.onPermissionDenied);
     }
 
     private PermissionSubscriber createUserResponseSubscriber(){
         return PermissionSubscriberFactory
-                .createUserResponseSubscriber(builder.onUserDirectPermissionGrant::onUserDirectGrant,builder.onUserDirectPermissionDeny::onUserDirectDeny);
+                .createUserResponseSubscriber(new OnPermissionGranted() {
+                    @Override
+                    public void onGranted(List<String> permissionList) {
+                        builder.onUserDirectPermissionGrant.onUserDirectGrant(permissionList);
+                    }
+                }, new OnPermissionDenied() {
+                    @Override
+                    public void onDenied(List<DenyInfo> deniedPermissionList) {
+                        builder.onUserDirectPermissionDeny.onUserDirectDeny(deniedPermissionList);
+                    }
+                });
     }
 
     public void checkPermissions(){
@@ -101,7 +111,7 @@ public class MommooPermission {
 
         intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);
-
+        System.out.println("dd?");
         this.builder.context.startActivity(intent);
     }
 
@@ -111,10 +121,10 @@ public class MommooPermission {
         private String preNoticeTitle, preNoticeMessage;
         private String postNoticeTitle, postNoticeMessage;
         private String offerGrantPermissionTitle, offerGrantPermissionMessage;
-        private OnPermissionGranted onPermissionGranted = PermissionEmptyListener.createPermissionGranted();
-        private OnPermissionDenied onPermissionDenied = PermissionEmptyListener.createOnPermissionDenied();
-        private OnUserDirectPermissionGrant onUserDirectPermissionGrant = PermissionEmptyListener.createUserPermissionGrant();
-        private OnUserDirectPermissionDeny onUserDirectPermissionDeny = PermissionEmptyListener.createUserPermissionDeny();
+        private OnPermissionGranted onPermissionGranted = PermissionEmptyListenerFactory.createPermissionGranted();
+        private OnPermissionDenied onPermissionDenied = PermissionEmptyListenerFactory.createOnPermissionDenied();
+        private OnUserDirectPermissionGrant onUserDirectPermissionGrant = PermissionEmptyListenerFactory.createUserPermissionGrant();
+        private OnUserDirectPermissionDeny onUserDirectPermissionDeny = PermissionEmptyListenerFactory.createUserPermissionDeny();
 
         public Builder(Context context){
             this.context = context;

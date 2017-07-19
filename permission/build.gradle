@@ -1,11 +1,10 @@
 apply plugin: 'com.android.library'
-apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.novoda.bintray-release'
 publish {
     userOrg = 'mommoo'
     groupId = 'com.mommoo.android'
     artifactId = 'mommoo-permission'
-    publishVersion = '0.1.2'
+    publishVersion = '0.1.5'
     desc = 'Android Permission Library - it is easy to use from the android marshmallow version'
     website = 'https://github.com/Mommoo/MommooPermission'
     issueTracker = "${website}/issues"
@@ -30,11 +29,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
     }
 
     lintOptions {

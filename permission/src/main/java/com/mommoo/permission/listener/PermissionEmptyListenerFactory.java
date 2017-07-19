@@ -23,22 +23,31 @@ import java.util.List;
  * @since 2017-06-09
  */
 
-public class PermissionEmptyListener {
-    private PermissionEmptyListener(){}
+public class PermissionEmptyListenerFactory {
+    private PermissionEmptyListenerFactory(){}
 
     public static OnPermissionDenied createOnPermissionDenied(){
-        return (List<DenyInfo> deniedPermissionList) -> {};
+        return new OnPermissionDenied() {
+            @Override public void onDenied(List<DenyInfo> deniedPermissionList) {}
+        };
     }
 
     public static OnPermissionGranted createPermissionGranted(){
-        return (List<String> permissionList) -> {};
+        return new OnPermissionGranted() {
+            @Override public void onGranted(List<String> permissionList) {}
+        };
     }
 
     public static OnUserDirectPermissionDeny createUserPermissionDeny(){
-        return (List<DenyInfo> deniedPermissionList) -> {};
+        return new OnUserDirectPermissionDeny() {
+            @Override public void onUserDirectDeny(List<DenyInfo> deniedPermissionList) {}
+        };
     }
 
     public static OnUserDirectPermissionGrant createUserPermissionGrant(){
-        return (List<String> permissionList) -> {};
+        return new OnUserDirectPermissionGrant() {
+            @Override
+            public void onUserDirectGrant(List<String> permissionList) {}
+        };
     }
 }

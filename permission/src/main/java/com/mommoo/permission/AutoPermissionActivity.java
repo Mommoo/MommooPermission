@@ -42,7 +42,7 @@ import static com.mommoo.permission.AutoPermissionExtraKey.*;
  *
  */
 
-class AutoPermissionActivity extends AppCompatActivity{
+public class AutoPermissionActivity extends AppCompatActivity{
     private static final int MARSHMALLOW_SDK_VERSION_INT = 23;
     private static final int PERMISSION_REQUEST_CODE = 0;
 
@@ -55,7 +55,7 @@ class AutoPermissionActivity extends AppCompatActivity{
 
         permissionClassifier = new PermissionClassifier(this, savedInstanceState);
 
-        if (Build.VERSION.SDK_INT < MARSHMALLOW_SDK_VERSION_INT || permissionClassifier.getNeedToCheckPermissions().length == 0){
+        if (isNotNeedToInspectPermission()){
             grantAllPermissions();
             permissionEventDone();
             return;
@@ -65,6 +65,7 @@ class AutoPermissionActivity extends AppCompatActivity{
          * If this activity was destroyed then, user activity is destroyed too.
          * So, we have to handle that sending callback-event to programmer who using this library
          */
+
         if (isNeedToHandleUserResponse()){
             handleUserResponse();
             return;
@@ -74,7 +75,16 @@ class AutoPermissionActivity extends AppCompatActivity{
 
         SequenceDialogHandler
                 .showDialog(createPreNoticeDialog())
-                .then(isDialogShown -> ActivityCompat.requestPermissions(AutoPermissionActivity.this, permissionClassifier.getNeedToCheckPermissions() , PERMISSION_REQUEST_CODE));
+                .then(new SequenceDialogHandler.Task() {
+                    @Override
+                    public void execute(boolean isDialogShown) {
+                        ActivityCompat.requestPermissions(AutoPermissionActivity.this, permissionClassifier.getNeedToCheckPermissions() , PERMISSION_REQUEST_CODE);
+                    }
+                });
+    }
+
+    private boolean isNotNeedToInspectPermission(){
+        return Build.VERSION.SDK_INT < MARSHMALLOW_SDK_VERSION_INT || permissionClassifier.getNeedToCheckPermissions().length == 0;
     }
 
     private boolean isNeedToHandleUserResponse(){
@@ -110,7 +120,7 @@ class AutoPermissionActivity extends AppCompatActivity{
     }
 
     private void grantAllPermissions(){
-        notifySelfCheckDone(Arrays.asList(permissionClassifier.getPermissions()), new ArrayList<>());
+        notifySelfCheckDone(Arrays.asList(permissionClassifier.getPermissions()), new ArrayList<DenyInfo>());
     }
 
     private void notifySelfCheckDone(List<String> grantedPermissionList, List<DenyInfo> deniedPermissionList){
@@ -146,16 +156,30 @@ class AutoPermissionActivity extends AppCompatActivity{
 
         SequenceDialogHandler
                 .showDialog(createPostNoticeDialog())
-                .then(isDialogShown -> notifySelfCheckDone(permissionClassifier.getGrantedPermissionList(), permissionClassifier.getDeniedPermissionList()))
+                .then(new SequenceDialogHandler.Task() {
+                    @Override
+                    public void execute(boolean isDialogShown) {
+                        notifySelfCheckDone(permissionClassifier.getGrantedPermissionList(), permissionClassifier.getDeniedPermissionList());
+                    }
+                })
                 .showDialog(createOfferGrantNotice())
-                .then(isDialogShown -> {if(!isDialogShown) permissionEventDone();});
+                .then(new SequenceDialogHandler.Task() {
+                    @Override
+                    public void execute(boolean isDialogShown) {
+                        if(!isDialogShown) permissionEventDone();
+                    }
+                });
     }
 
     public void permissionEventDone(){
-        PermissionEventChecker.getChecker(this)
-                .complete(()-> {
-                    PermissionEventProvider.getEventProvider().unRegisterAllSubscribers();
-                    finish();
+        PermissionEventChecker
+                .getChecker(this)
+                .complete(new Runnable() {
+                    @Override
+                    public void run() {
+                        PermissionEventProvider.getEventProvider().unRegisterAllSubscribers();
+                        finish();
+                    }
                 });
     }
 

@@ -1,12 +1,12 @@
 package com.mommoo.permission;
 
+import com.mommoo.permission.listener.OnPermissionDenied;
+import com.mommoo.permission.listener.OnPermissionGranted;
 import com.mommoo.permission.repository.DenyInfo;
 import com.mommoo.permission.utils.observer.PermissionEventCode;
 import com.mommoo.permission.utils.observer.PermissionSubscriber;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * Copyright 2017 Mommoo
@@ -31,19 +31,25 @@ class PermissionSubscriberFactory {
 
     private PermissionSubscriberFactory(){}
 
-    static PermissionSubscriber createSelfCheckSubscriber(Consumer<List<String>> grantedConsumer, Consumer<List<DenyInfo>> deniedConsumer) {
-        return createCommonSubscriber(PermissionEventCode.SELF_CHECK,grantedConsumer,deniedConsumer);
+    static PermissionSubscriber createSelfCheckSubscriber(OnPermissionGranted onPermissionGranted, OnPermissionDenied onPermissionDenied) {
+        return createCommonSubscriber(PermissionEventCode.SELF_CHECK, onPermissionGranted, onPermissionDenied);
     }
 
-    static PermissionSubscriber createUserResponseSubscriber(Consumer<List<String>> grantedConsumer, Consumer<List<DenyInfo>> deniedConsumer){
-        return createCommonSubscriber(PermissionEventCode.USER_RESPONSE,grantedConsumer,deniedConsumer);
+    static PermissionSubscriber createUserResponseSubscriber(OnPermissionGranted onPermissionGranted, OnPermissionDenied onPermissionDenied){
+        return createCommonSubscriber(PermissionEventCode.USER_RESPONSE, onPermissionGranted, onPermissionDenied);
     }
 
-    private static PermissionSubscriber createCommonSubscriber(PermissionEventCode targetCode, Consumer<List<String>> grantedConsumer, Consumer<List<DenyInfo>> deniedConsumer){
-        return (eventCode, grantedPermissionList, deniedPermissionList) -> {
-            if(targetCode != eventCode) return;
-            if (grantedPermissionList.size() > 0) grantedConsumer.accept(grantedPermissionList);
-            if (deniedPermissionList.size() > 0) deniedConsumer.accept(deniedPermissionList);
+    private static PermissionSubscriber createCommonSubscriber(final PermissionEventCode targetCode, final OnPermissionGranted onPermissionGranted, final OnPermissionDenied onPermissionDenied){
+        return new PermissionSubscriber() {
+            @Override
+            public void update(PermissionEventCode permissionEventCode, List<String> grantedPermissionList, List<DenyInfo> deniedPermissionList) {
+                if (permissionEventCode == targetCode){
+                    if (grantedPermissionList.size() > 0) onPermissionGranted.onGranted(grantedPermissionList);
+                    if (deniedPermissionList.size() > 0) onPermissionDenied.onDenied(deniedPermissionList);
+                }
+
+
+            }
         };
     }
 }

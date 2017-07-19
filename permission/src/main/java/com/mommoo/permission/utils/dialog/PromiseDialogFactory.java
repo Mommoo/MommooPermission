@@ -8,6 +8,7 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 
 import com.mommoo.library.widget.alert.AlertDialog;
+import com.mommoo.library.widget.alert.OnPositiveListener;
 import com.mommoo.library.widget.alert.Theme;
 
 import static com.mommoo.permission.AutoPermissionExtraKey.USER_PERMISSION_ACTION_RESULT_CODE;
@@ -98,16 +99,21 @@ public class PromiseDialogFactory {
             ,@Nullable String title, @Nullable String message, @Nullable final String packageName) {
         if (isInValid(title, message, packageName)) return createInvalidDialog();
 
+        OnPositiveListener dialogPositiveListener = new OnPositiveListener() {
+            @Override
+            public void onPositive() {
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.addCategory(Intent.CATEGORY_DEFAULT);
+                intent.setData(Uri.parse("package:"+packageName));
+                context.startActivityForResult(intent, USER_PERMISSION_ACTION_RESULT_CODE);
+            }
+        };
+
         final AlertDialog offerGrantNoticeDialog = createBasicDialogBuilder(context)
                 .setTitle(title)
                 .setContent(message)
                 .setPositiveText("SETUP")
-                .setOnPositiveListener(()->{
-                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intent.addCategory(Intent.CATEGORY_DEFAULT);
-                    intent.setData(Uri.parse("package:"+packageName));
-                    context.startActivityForResult(intent, USER_PERMISSION_ACTION_RESULT_CODE);
-                })
+                .setOnPositiveListener(dialogPositiveListener)
                 .build();
 
         return createPromiseDialog(offerGrantNoticeDialog);

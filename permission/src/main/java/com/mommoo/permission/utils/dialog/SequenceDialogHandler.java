@@ -64,7 +64,11 @@ public class SequenceDialogHandler {
                 protected void onPostExecute(Void aVoid) {
                     super.onPostExecute(aVoid);
                     boolean isDialogShown = promiseDialog != PromiseDialogFactory.createInvalidDialog();
-                    taskList.forEach(task -> task.execute(isDialogShown));
+
+                    for (Task task : taskList){
+                        task.execute(isDialogShown);
+                    }
+
                     if (nextPromise != null) nextPromise.execute();
                 }
             }.execute();
